@@ -60,6 +60,11 @@ function print_f {
 mkdir -p $config
 
 if [ ! -z "$1" ]; then
+	if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+		help
+		exit
+	fi
+
 	p_type=""
 	file=""
 	if [ "$#" -eq 1 ]; then
