@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-function help {
+help() {
 	echo -e "Usage: ./printer [all|store|upload|print] file"
 }
 
@@ -19,7 +19,7 @@ content_type="\"Content-Type: application/x-www-form-urlencoded\""
 
 file_types="pdf|jpg|gif|png|tif|bmp|txt|docx|docm|dotx|dotm|xlsx|xlsm|xltx|xltm|xlsb|xlam|pptx|pptm|potx|potm|ppam|ppsx|ppsm|sldx|sldm|thmx"
 
-function store {
+store() {
 	# echo -e "In store"
 	read -p 'Username: ' username
 	read -sp 'Password: ' password
@@ -30,31 +30,31 @@ function store {
 	sh -c "curl -s -X POST $urllogin -d $querylogin -H $content_type -c $cookies"
 }
 
-function upload() {
+upload() {
 	# echo -e "In upload"
 	sh -c "curl -s -F 'type=file' -b $cookies -F 'FileToPrint=@$1' -o $out $urlpost"
 }
 
-function wait_on_upload {
+wait_on_upload() {
 	# echo "Waiting"
 	sleep 5
 }
 
-function print_f {
+print_f() {
 	# echo -e "In print"
 	# Poll check if upload is complete
 	wait_on_upload
 
 	sh -c "curl -s -b $cookies -o $out $urlindex"
-	jid="$(pup 'input[name=JID]' < $out | head -1 | grep -Po "(?<=value=\").*(?=\")")"
-	pid="$(pup 'input[name=PID]' < $out | head -1 | grep -Po "(?<=value=\").*(?=\")")"
-	pagefrom="$(pup 'input[name=PageFrom]' < $out | head -1 | grep -Po "(?<=value=\")\d*(?=\")")"
-	pageto="$(pup 'input[name=PageTo]' < $out | head -1 | grep -Po "(?<=value=\")\d*(?=\")")"
+	jid="$(pup 'input[name=JID]' <$out | head -1 | grep -Po "(?<=value=\").*(?=\")")"
+	pid="$(pup 'input[name=PID]' <$out | head -1 | grep -Po "(?<=value=\").*(?=\")")"
+	pagefrom="$(pup 'input[name=PageFrom]' <$out | head -1 | grep -Po "(?<=value=\")\d*(?=\")")"
+	pageto="$(pup 'input[name=PageTo]' <$out | head -1 | grep -Po "(?<=value=\")\d*(?=\")")"
 
 	queryprint="JID=$jid&PID=$pid&NumberOfCopies=1&PageFrom=$pagefrom&PageTo=$pageto"
 	queryprint="${queryprint}&Duplex=1&PrintBW=True&method=printjob"
 
-	sh -c "curl -s -X POST -H $content_type -d '$queryprint' $urlprint -b $cookies" > /dev/null
+	sh -c "curl -s -X POST -H $content_type -d '$queryprint' $urlprint -b $cookies" >/dev/null
 }
 
 mkdir -p $config
@@ -93,7 +93,7 @@ if [ ! -z "$1" ]; then
 		echo -e "File: \"$file\"\tdoes not exist"
 		exit
 	fi
-	
+
 	if [ "$p_type" == "all" ]; then
 		touch $out
 		if [ ! -f "$cookies" ] || (($(($(date +%s) - $(stat -c %Y $cookies))) > 120)); then
